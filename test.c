@@ -43,7 +43,7 @@ int main(){
         // printf("Process %d is in Queue 1 ? (1 for yes 0 for no) ", i);
         // scanf("%d", &f);
         printf("Process %d Arrival and Burst Time : ", i);
-        if(1){
+        if(0){
             q1++;
             scanf("%d %d", &Q1[q1].arrivalTime, &Q1[q1].burstTime);
             totalTime += Q1[q1].burstTime;
@@ -66,16 +66,20 @@ int main(){
     sortBubble(Q1, q1, 0);
     sortBubble(Q2, q2, 0);
 
-    int k=0, c=0;
+    // printf("\nQueue 2\n");
+    // for(int i = 0; i <=q2; i++)
+    //     printf("P%d %d %d \n", Q2[i].id, Q2[i].arrivalTime, Q2[i].burstTime);
+
+    int k=0, c=0, d=0, tq=1;
     for(int i = 0; i < totalTime; i++)
     {
         // printf("P%d %d \n", Q1[c].id, Q1[c].arrivalTime);
         sortBubble(Q1, q1, i);
-        printf("\nQueue 1\n");
-        for(int j = 0; j <=q1; j++)
-        {
-            printf("P%d %d %d \n", Q1[j].id, Q1[j].arrivalTime, Q1[j].burstTime);
-        }
+        // printf("\nQueue 1\n");
+        // for(int j = 0; j <=q1; j++)
+        // {
+        //     printf("P%d %d %d \n", Q1[j].id, Q1[j].arrivalTime, Q1[j].burstTime);
+        // }
         if(q1>=0 && Q1[c].arrivalTime <= i ){
             Q1[0].burstTime--;
             printf("\n P%d %d %d\n", Q1[c].id, Q1[c].arrivalTime, Q1[c].burstTime);
@@ -88,7 +92,39 @@ int main(){
                 k++;
                 c++;
             }
+        }else if(q2>=0 && Q2[d].arrivalTime <= i){
+            
+            Q2[d].burstTime--;
+            printf("P%d \n", Q2[d].id);
+            if(Q2[d].burstTime <= 0){
+                Qc[k] = Q2[d];
+                Qc[k].completedAt = i+1;
+
+                // printf("P%d \n", Q2[d].id);
+                for (c = d; c <=q2; c++)
+                    Q2[c] = Q2[c+1];
+                q2--;
+
+                // for(int i = 0; i <=q2; i++)
+                //     printf("After removal P%d %d %d \n", Q2[i].id, Q2[i].arrivalTime, Q2[i].burstTime);
+                tq=0;
+                // d++;
+                if(q2<d) d=0;
+                // printf("q2 = %d, d = %d \n", q2, d);
+                k++;
+            }
+            if(tq==2){
+                d++;
+                if(q2>0) d%=q2+1;
+                tq=1;
+            }
+            else{
+                tq++;
+            }
+            
         }
+        else continue;
+        
         
     }
     
