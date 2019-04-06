@@ -1,9 +1,6 @@
 #include<stdio.h>
 #include<string.h>
 
-#include<stdlib.h>
-#include <unistd.h>
-
 struct process
 {
     int id, arrivalTime, burstTime, completedAt, turnAroundTime, avgWaitingTime;
@@ -16,14 +13,25 @@ void sortBubble(struct process A[], int n, int currentTime){
             int time = (A[j].arrivalTime-currentTime)>0 ? A[j].arrivalTime-currentTime : 0 ;
             int nextTime = (A[j+1].arrivalTime-currentTime)>0 ? A[j+1].arrivalTime-currentTime : 0 ;
             if( time == nextTime){
-                // printf("%d\n", A[j].burstTime);
                 if(A[j].burstTime > A[j+1].burstTime){
                     temp = A[j];
                     A[j]=A[j+1];
                     A[j+1]=temp;
                 }
             }else if(time > nextTime){
-                // printf("%d\n", A[j].burstTime);
+                temp = A[j];
+                A[j]=A[j+1];
+                A[j+1]=temp;
+            }
+        }
+    }
+}
+
+void sortBubbleIdWise(struct process A[], int n){
+    struct process temp;
+    for(int i=0; i<=n; i++){
+        for(int j=0; j<=n-1-i; j++){
+            if(A[j].id > A[j+1].id){
                 temp = A[j];
                 A[j]=A[j+1];
                 A[j+1]=temp;
@@ -34,24 +42,26 @@ void sortBubble(struct process A[], int n, int currentTime){
 
 int main(){
     struct process Q1[100], Q2[100];
-    int f, at, bt, n, q1=-1, q2=-1, totalTime=0;
+    int f, n, tat=0, wt=0, q1=-1, q2=-1, totalTime=0;
     printf("Enter number of process : ");
     scanf("%d", &n);
     struct process Qc[n];
     for(int i = 0; i < n; i++)
     {
-        // printf("Process %d is in Queue 1 ? (1 for yes 0 for no) ", i);
-        // scanf("%d", &f);
+        printf("Process %d is in Queue 1 ? (1 for yes 0 for no) ", i);
+        scanf("%d", &f);
         printf("Process %d Arrival and Burst Time : ", i);
-        if(0){
+        if(f){
             q1++;
             scanf("%d %d", &Q1[q1].arrivalTime, &Q1[q1].burstTime);
+            Q1[q1].avgWaitingTime = Q1[q1].burstTime;
             totalTime += Q1[q1].burstTime;
             Q1[q1].id=i;
         }else
         {
             q2++;
             scanf("%d %d", &Q2[q2].arrivalTime, &Q2[q2].burstTime);
+            Q2[q2].avgWaitingTime = Q2[q2].burstTime;
             totalTime += Q2[q2].burstTime;
             Q2[q2].id=i;
         }
@@ -66,26 +76,17 @@ int main(){
     sortBubble(Q1, q1, 0);
     sortBubble(Q2, q2, 0);
 
-    // printf("\nQueue 2\n");
-    // for(int i = 0; i <=q2; i++)
-    //     printf("P%d %d %d \n", Q2[i].id, Q2[i].arrivalTime, Q2[i].burstTime);
-
     int k=0, c=0, d=0, tq=1;
     for(int i = 0; i < totalTime; i++)
     {
-        // printf("P%d %d \n", Q1[c].id, Q1[c].arrivalTime);
         sortBubble(Q1, q1, i);
-        // printf("\nQueue 1\n");
-        // for(int j = 0; j <=q1; j++)
-        // {
-        //     printf("P%d %d %d \n", Q1[j].id, Q1[j].arrivalTime, Q1[j].burstTime);
-        // }
+
         if(q1>=0 && Q1[c].arrivalTime <= i ){
             Q1[0].burstTime--;
-            printf("\n P%d %d %d\n", Q1[c].id, Q1[c].arrivalTime, Q1[c].burstTime);
             if(Q1[0].burstTime == 0){
                 Qc[k] = Q1[0];
                 Qc[k].completedAt = i+1;
+                Qc[k].turnAroundTime = Qc[k].completedAt - Qc[k].arrivalTime;
                 for (c = 0; c < q1; c++)
                     Q1[c] = Q1[c+1];
                 q1--;
@@ -95,22 +96,15 @@ int main(){
         }else if(q2>=0 && Q2[d].arrivalTime <= i){
             
             Q2[d].burstTime--;
-            printf("P%d \n", Q2[d].id);
             if(Q2[d].burstTime <= 0){
                 Qc[k] = Q2[d];
                 Qc[k].completedAt = i+1;
-
-                // printf("P%d \n", Q2[d].id);
+                Qc[k].turnAroundTime = Qc[k].completedAt - Qc[k].arrivalTime;
                 for (c = d; c <=q2; c++)
                     Q2[c] = Q2[c+1];
                 q2--;
-
-                // for(int i = 0; i <=q2; i++)
-                //     printf("After removal P%d %d %d \n", Q2[i].id, Q2[i].arrivalTime, Q2[i].burstTime);
                 tq=0;
-                // d++;
                 if(q2<d) d=0;
-                // printf("q2 = %d, d = %d \n", q2, d);
                 k++;
             }
             if(tq==2){
@@ -125,28 +119,25 @@ int main(){
         }
         else continue;
         
-        
     }
-    
 
-    printf("\nQueue\n");
-    printf("\nProcess \tAT \tCT \n");
+
+    printf("\nProcesses will get completed in the following Order \n");
+    for(int i = 0; i <n; i++){
+        printf("--> P%d ", Qc[i].id);
+    }
+    sortBubbleIdWise(Qc, n);
+    printf("\n\nAT : Arrival time \tBT : Burst Time \tCT : Completion Time \tTAT : TurnAround Time \tWT : Waiting Time\n");
+    printf("\nProcess \tAT \tBT \tCT \tTAT \tWT \n");
     for(int i = 0; i <n; i++)
     {
-        printf("P%d \t\t%d \t%d \n", Qc[i].id, Qc[i].arrivalTime, Qc[i].completedAt);
+        tat += Qc[i].turnAroundTime;
+        wt += (Qc[i].turnAroundTime - Qc[i].avgWaitingTime);
+        printf("P%d \t\t%d \t%d \t%d \t%d \t%d \n", Qc[i].id, Qc[i].arrivalTime, Qc[i].avgWaitingTime, Qc[i].completedAt, Qc[i].turnAroundTime, (Qc[i].turnAroundTime - Qc[i].avgWaitingTime) );
     }
 
-    // printf("\nQueue 1\n");
-    // for(int i = 0; i <=q1; i++)
-    // {
-    //     printf("P%d %d %d \n", Q1[i].id, Q1[i].arrivalTime, Q1[i].burstTime);
-    // }
-    // printf("\nQueue 2\n");
-    // for(int i = 0; i <=q2; i++)
-    // {
-    //     printf("P%d %d %d \n", Q2[i].id, Q2[i].arrivalTime, Q2[i].burstTime);
-    // }
-    
+    printf("\nAverage Turn Around Time : %0.2f", (float)tat/n);
+    printf("\nAverage Waiting Time : %0.2f\n", (float)wt/n);
     
     return 0;
 }
